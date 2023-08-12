@@ -1,5 +1,7 @@
 import AccountProfile from "@/components/forms/AccountProfile";
+import { fetchUser } from "@/lib/actions/user.action";
 import { currentUser } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
 interface User {
     id: number;
@@ -13,14 +15,16 @@ interface User {
 async function Page() {
 
     const user = await currentUser();
+    if(!user) return null;
 
-    const userInfo = {};
+    const userInfo = await fetchUser(user.id);
+    if(userInfo?.onboarded) redirect('/')
 
     const userData = {
         id: user?.id,
         objectId: userInfo?.id,
         username: userInfo?.username || user?.username,
-        name: userInfo?.name || user?.name,
+        name: userInfo?.name || user?.firstName || "",
         bio: userInfo?.bio || "",
         image: userInfo?.image || user?.imageUrl
     }
